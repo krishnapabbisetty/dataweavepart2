@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+	<configuration-properties file="application.properties"/>
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="52138550-373b-4ea2-a552-d202e36c06ab" >
+		<http:listener-connection host="0.0.0.0" port="8082" />
+	</http:listener-config>
+	<flow name="handling-properties-listFlow" doc:id="6b64ccd3-7004-475d-86f4-0e62d740388e" >
+		<http:listener doc:name="Listener" doc:id="ea86e0b3-d218-4039-8552-d01e7aa9aa19" config-ref="HTTP_Listener_config" path="/list"/>
+		<set-variable value="${city.country.map}" doc:name="Set-Map" doc:id="eae216c1-5e39-4866-95c2-bb69e31d159e" variableName="cityCountryMapEntries"/>
+		<set-variable value="#[attributes.queryParams.city]" doc:name="Set-Query-Parameter" doc:id="046a92ca-a3e7-4bd6-b296-6f75992f2c13" variableName="city"/>
+		<ee:transform doc:name="Set-List" doc:id="79a7bfea-ae7a-4f36-817b-19f0783e4ba6" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+var cityCountryProperty=vars.cityCountryProperty
+---
+cityCountryProperty]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="cityList" ><![CDATA[%dw 2.0
+output application/java
+import java!org::springframework::util::StringUtils
+---
+StringUtils::delimitedListToStringArray(p('city.list'), ",")]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="Traverse-Map" doc:id="0013e766-4292-4a55-8714-0104dad13378" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	cityList: vars.cityList map {
+		position: $$,
+		key : $,
+		value : vars.cityCountryMapEntries[$ as String][0]
+	},
+	inputCity : vars.city,
+	exists : if (vars.cityList contains vars.city) 'Yes' else 'No'
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
