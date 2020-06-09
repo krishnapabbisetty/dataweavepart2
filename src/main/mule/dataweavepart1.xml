@@ -8,7 +8,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 
 	<configuration-properties file="application.properties"/>
 	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="52138550-373b-4ea2-a552-d202e36c06ab" >
-		<http:listener-connection host="0.0.0.0" port="8082" />
+		<http:listener-connection host="0.0.0.0" port="8083" />
 	</http:listener-config>
 	<flow name="handling-properties-listFlow" doc:id="6b64ccd3-7004-475d-86f4-0e62d740388e" >
 		<http:listener doc:name="Listener" doc:id="ea86e0b3-d218-4039-8552-d01e7aa9aa19" config-ref="HTTP_Listener_config" path="/list"/>
@@ -42,7 +42,7 @@ output application/json
 		value : vars.cityCountryMapEntries[$ as String][0]
 	},
 	inputCity : vars.city,
-	exists : if (vars.cityList contains vars.city) 'Yes' else 'No'
+	exists : if (vars.cityList contains vars.city) 'YES' else 'NO'
 }
 ]]></ee:set-payload>
 			</ee:message>
